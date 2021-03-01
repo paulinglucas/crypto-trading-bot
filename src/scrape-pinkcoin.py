@@ -1,10 +1,17 @@
-import requests
+import requests, sys
 from bs4 import BeautifulSoup
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
+
 
 ## arbitrary params, can be changes
 COIN = 'pinkcoin'
 START_DATE = '2016-02-27'
-END_DATE = '2021-02-27'
+today = datetime.now()
+END_DATE = datetime.strftime(today, '%Y-%m-%d')
 
 ## some columns have null values, fill with 'N/A'
 def deal_with_na(price_pt):
@@ -27,19 +34,41 @@ def extract_table(soup):
     data = hist_body.find_all('tr')
 
     ## begin filling dictionary with data
-    data_dict = {}
+    dates = []
+    prices = []
     for d in data:
-        prices = d.find_all('td')
-        data_dict[d.find('th').text] = {
-            heads[1]: deal_with_na(prices[0].text.strip().replace("$", "").replace(",", "")),
-            heads[2]: deal_with_na(prices[1].text.strip().replace("$", "").replace(",", "")),
-            heads[3]: deal_with_na(prices[2].text.strip().replace("$", "").replace(",", "")),
-            heads[4]: deal_with_na(prices[3].text.strip().replace("$", "").replace(",", ""))
-        }
+        curr_data = d.find_all('td')
+        dates.append(d.find('th').text)
+        cap =   deal_with_na(curr_data[0].text.strip().replace("$", "").replace(",", ""))
+        vol =   deal_with_na(curr_data[1].text.strip().replace("$", "").replace(",", ""))
+        open =  deal_with_na(curr_data[2].text.strip().replace("$", "").replace(",", ""))
+        close = deal_with_na(curr_data[3].text.strip().replace("$", "").replace(",", ""))
+        prices.append([cap, vol, open, close])
 
-    return data_dict
+    return dates, prices
+
+## plot data frame onto graph
+def visualize_data(df):
+    ## remove all null closing values, should just disclude current day
+    df = df[df.Close != 'N/A']
+
+    ## plot
+    sns.regplot(x = "Market_Cap", y="Volume", data=df, fit_reg = False, scatter_kws={"alpha": 0.2})
+    plt.show()
+
+    return 0
 
 def main():
+    ## make sure variables are inserted
+    # if len(sys.argv) != 3:
+    #     print("USAGE: python3 scrape-pinkcoin.py [COLUMN 1] [COLUMN 2]")
+    #     print("Columns to choose from:")
+    #     print("     Market_Cap")
+    #     print("     Volume")
+    #     print("     Open")
+    #     print("     Close")
+    #     sys.exit(0)
+
     ## get url query from pinkcoin site
     URL = 'https://www.coingecko.com/en/coins/{}/historical_data/usd?end_date={}&start_date={}#panel'.format(COIN, END_DATE, START_DATE)
     page = requests.get(URL)
@@ -48,8 +77,13 @@ def main():
     soup = BeautifulSoup(page.content, 'html.parser')
 
     ## extract table and place into dictionary
-    data_dict = extract_table(soup)
-    print(data_dict)
+    dates, prices = extract_table(soup)
+
+    ## create data frame from scraped data
+    df = pd.DataFrame(prices, index=dates, columns=['Market_Cap', 'Volume', 'Open', 'Close'])
+
+    ## plot onto graph
+    visualize_data(df) #, sys.argv[1], sys.argv[2])
 
 
 
