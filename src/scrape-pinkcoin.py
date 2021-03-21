@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 
 
-## arbitrary params, can be changes
+## arbitrary params, can be changed
 COIN = 'pinkcoin'
 START_DATE = '2016-02-27'
 today = datetime.now()
@@ -59,7 +59,7 @@ def visualize_data(df):
     return 0
 
 def main():
-    ## make sure variables are inserted
+    # # make sure variables are inserted
     # if len(sys.argv) != 3:
     #     print("USAGE: python3 scrape-pinkcoin.py [COLUMN 1] [COLUMN 2]")
     #     print("Columns to choose from:")
@@ -81,6 +81,9 @@ def main():
 
     ## create data frame from scraped data
     df = pd.DataFrame(prices, index=dates, columns=['Market_Cap', 'Volume', 'Open', 'Close'])
+
+    df.to_excel('../excel_sheets/coin_data.xlsx')
+    print(df)
 
     ## plot onto graph
     visualize_data(df) #, sys.argv[1], sys.argv[2])
