@@ -82,6 +82,7 @@ def main():
     ## create data frame from scraped data
     df = pd.DataFrame(prices, index=dates, columns=['Market_Cap', 'Volume', 'Open', 'Close'])
 
+    ## export file to excel
     df.to_excel('../excel_sheets/coin_data.xlsx')
     print(df)
 
