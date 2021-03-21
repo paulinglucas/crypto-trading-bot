@@ -5,6 +5,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
+from online_resource import append_df_to_excel
 
 
 ## arbitrary params, can be changed
@@ -83,7 +84,8 @@ def main():
     df = pd.DataFrame(prices, index=dates, columns=['Market_Cap', 'Volume', 'Open', 'Close'])
 
     ## export file to excel
-    df.to_excel('../excel_sheets/coin_data.xlsx')
+    filename = '../excel_sheets/coin_data.xlsx'
+    append_df_to_excel(filename, df, header=None, index=False)
     print(df)
 
     ## plot onto graph
